@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Music Generation</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: url('/static/background.png') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+            color: #333;
+        }
+        .container {
+            background: rgba(167, 152, 152, 0);
+            border-radius: 20px;
+            padding: 20px;
+            width: 350px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow-y: auto;
+            max-height: 80vh;
+        }
+        .gradient-overlay {
+            background: linear-gradient(to bottom, rgba(245, 208, 169, 0.7), rgba(247, 225, 181, 0.7));
+            border-radius: 20px;
+            padding: 20px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 0;
+        }
+        .content {
+            position: relative;
+            z-index: 1;
+        }
+        h1 {
+            font-size: 1.8em;
+            margin: 0 0 10px;
+            font-weight: 700;
+            color: #000000;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        p {
+            font-size: 0.9em;
+            margin: 0 0 15px;
+            color: #423b3b;
+            opacity: 0.9;
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+        }
+        form {
+            margin-bottom: 15px;
+        }
+        .input-group {
+            margin: 10px 0;
+        }
+        select, button[type="submit"] {
+            padding: 8px 12px;
+            border-radius: 15px;
+            border: none;
+            margin: 5px;
+            font-size: 0.9em;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.3);
+            color: #574d4d;
+            transition: background 0.3s;
+        }
+        select:hover, button[type="submit"]:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .controls button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2em;
+            color: #000000;
+            padding: 5px;
+            transition: color 0.3s;
+        }
+        .controls button:hover {
+            color: #ddd;
+        }
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .action-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            color: #534c4c;
+            font-size: 0.9em;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: background 0.3s, transform 0.1s;
+        }
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+        .lyrics {
+            margin-top: 15px;
+            font-size: 0.85em;
+            color: #413c3c;
+            white-space: pre-wrap;
+            max-height: 150px;
+            overflow-y: auto;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="gradient-overlay"></div>
+        <div class="content">
+            <h1>AI Music-Lyrics Generation</h1>
+         
+
+            <!-- Form to input theme, mood, and style -->
+            <form action="/generate" method="POST">
+                <div class="input-group">
+                    <select name="theme" required>
+                        <option value="" disabled selected>Select Theme</option>
+                        <option value="love">Love</option>
+                        <option value="adventure">Adventure</option>
+                        <option value="sadness">Sadness</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <select name="mood" required>
+                        <option value="" disabled selected>Select Mood</option>
+                        <option value="happy">Happy</option>
+                        <option value="melancholic">Melancholic</option>
+                        <option value="energetic">Energetic</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <select name="style" required>
+                        <option value="" disabled selected>Select Style</option>
+                        <option value="pop">Pop</option>
+                        <option value="rock">Rock</option>
+                        <option value="classical">Classical</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <button type="submit">Generate</button>
+                </div>
+            </form>
+
+            <!-- Playback and Action Buttons -->
+            {% if download_link %}
+            <div class="controls">
+                <button onclick="rewind()">⏪</button>
+                <button onclick="playPause()">⏯</button>
+                <button onclick="forward()">⏩</button>
+            </div>
+            <div class="action-buttons">
+                <a href="/download" class="action-btn">Download</a>
+            </div>
+            {% if lyrics %}
+            <div class="lyrics">
+                <h3>Generated Lyrics:</h3>
+                <p>{{ lyrics }}</p>
+            </div>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+            return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+            if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+                try {
+                    var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                    var firstSheetName = workbook.SheetNames[0];
+                    var worksheet = workbook.Sheets[firstSheetName];
+
+                    // Convert sheet to JSON to filter blank rows
+                    var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                    // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                    var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                    // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                    var headerRowIndex = filteredData.findIndex((row, index) =>
+                        row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                    );
+                    // Fallback
+                    if (headerRowIndex === -1 || headerRowIndex > 25) {
+                        headerRowIndex = 0;
+                    }
+
+                    // Convert filtered JSON back to CSV
+                    var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                    csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                    return csv;
+                } catch (e) {
+                    console.error(e);
+                    return "";
+                }
+            }
+            return gk_fileData[filename] || "";
+        }
+
+        let isPlaying = false;
+        let audio = null;
+
+        function playPause() {
+            if (!isPlaying) {
+                if (!audio) {
+                    audio = new Audio('/static/full_song.mp3'); // Update to MP3 for better playback
+                }
+                audio.play().catch(error => {
+                    alert("MIDI playback not supported. Please download and use an external player.");
+                });
+                isPlaying = true;
+            } else {
+                audio.pause();
+                isPlaying = false;
+            }
+        }
+
+        function rewind() {
+            if (audio) {
+                audio.currentTime = Math.max(0, audio.currentTime - 10);
+            }
+        }
+
+        function forward() {
+            if (audio) {
+                audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
+            }
+        }
+    </script>
+    <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9364d6926ddbbd35',t:'MTc0NTY1NzQ4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+</body>
+</html>
